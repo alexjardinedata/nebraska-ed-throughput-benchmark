@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lincoln ED Throughput Benchmark | Data Dashboard — Alex Jardine</title>
+<style>
+  :root{
+    --navy:#14253D;
+    --bryan:#1E6FD9;
+    --bryan-light:#7FB2F0;
+    --alert:#E8702A;
+    --gray:#8A97A6;
+    --bench:#C7D0DA;
+    --panel:#F4F7FB;
+    --rule:#D9E1EA;
+    --paper:#FFFFFF;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--navy);background:var(--paper);line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  h1,h2,h3,.serif{font-family:Georgia,"Times New Roman",serif}
+
+  @media (prefers-reduced-motion: no-preference){
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+    .reveal.in{opacity:1;transform:none}
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{background:var(--navy);color:#fff;padding:56px 0 48px}
+  .hero .eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--bryan-light);font-weight:600;margin-bottom:18px}
+  .hero h1{font-size:clamp(30px,5vw,52px);line-height:1.08;font-weight:700;letter-spacing:-.01em;max-width:18ch}
+  .hero h1 .b{color:var(--bryan-light)}
+  .hero .sub{margin-top:18px;font-size:17px;color:#D7E2EE;max-width:62ch}
+  .hero .meta{margin-top:26px;display:flex;flex-wrap:wrap;gap:8px 28px;font-size:13px;color:var(--gray)}
+  .hero .meta b{color:#fff;font-weight:600}
+
+  /* ---------- LIVE STAT TICKER ---------- */
+  .ticker{background:#0F1B2D;border-top:1px solid #243characters;overflow:hidden;white-space:nowrap;padding:13px 0}
+  .ticker{border-top:1px solid #24344C;border-bottom:1px solid #24344C}
+  .ticker-track{display:inline-block;white-space:nowrap;animation:scroll 34s linear infinite}
+  .ticker:hover .ticker-track{animation-play-state:paused}
+  .ticker .item{display:inline-block;padding:0 30px;font-size:13.5px;color:#AFC0D4;border-right:1px solid #2A3B54}
+  .ticker .item b{color:#fff}
+  .ticker .item .hl{color:var(--bryan-light)}
+  .ticker .item .al{color:var(--alert)}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion: reduce){.ticker-track{animation:none}.ticker{white-space:normal}.ticker .item{border:none;display:inline}}
+
+  /* ---------- BIG IDEA STRIP ---------- */
+  .bigidea{background:var(--panel);padding:30px 0;border-bottom:1px solid var(--rule)}
+  .bigidea p{font-size:clamp(18px,2.4vw,24px);font-family:Georgia,serif;line-height:1.4;max-width:46ch}
+  .bigidea .q{margin-top:14px;font-size:14px;color:var(--gray);max-width:80ch}
+  .bigidea .q b{color:var(--navy)}
+
+  /* ---------- SECTION SHELL ---------- */
+  section.story{padding:52px 0;border-bottom:1px solid var(--rule)}
+  .secnum{font-family:Georgia,serif;font-size:15px;color:var(--bryan);font-weight:700;letter-spacing:.05em}
+  .sectitle{font-size:26px;font-weight:700;margin:2px 0 4px;line-height:1.15}
+  .secmeta{font-size:13px;color:var(--gray);margin-bottom:22px}
+
+  /* ---------- SIGNATURE: head-to-head bars ---------- */
+  .h2h{display:grid;gap:14px;max-width:760px}
+  .barrow{display:grid;grid-template-columns:170px 1fr 70px;align-items:center;gap:14px}
+  .barrow .name{font-size:14px;text-align:right;color:var(--navy)}
+  .barrow .name small{display:block;color:var(--gray);font-size:11px}
+  .track{position:relative;background:var(--panel);border-radius:5px;height:34px;overflow:hidden}
+  .fill{height:100%;border-radius:5px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+  .fill.bryan{background:var(--bryan)}
+  .fill.alert{background:var(--alert)}
+  .fill.ctx{background:var(--bench)}
+  .barrow .val{font-weight:700;font-size:16px}
+  .benchline{position:relative;height:0;max-width:760px}
+  .benchmark-note{margin-top:18px;font-size:13px;color:var(--gray);max-width:70ch}
+
+  /* ---------- network grid ---------- */
+  .netgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:760px;margin-top:6px}
+  .netcard{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:16px}
+  .netcard .v{font-family:Georgia,serif;font-size:30px;font-weight:700;color:var(--bryan)}
+  .netcard .v.over{color:var(--alert)}
+  .netcard .n{font-size:12.5px;color:var(--navy);margin-top:2px}
+  .netcard .d{font-size:11.5px;color:var(--gray);margin-top:4px}
+  @media(max-width:680px){.netgrid{grid-template-columns:1fr 1fr}}
+
+  /* ---------- walkout strip ---------- */
+  .walk{display:grid;gap:10px;max-width:620px}
+  .walkrow{display:grid;grid-template-columns:150px 1fr 54px;align-items:center;gap:12px;font-size:14px}
+  .walktrack{background:var(--panel);border-radius:4px;height:26px;position:relative;overflow:hidden}
+  .walkfill{height:100%;width:0;border-radius:4px;transition:width 1s ease}
+
+  /* ---------- coverage ---------- */
+  .cov{max-width:680px}
+  .covrow{display:grid;grid-template-columns:200px 1fr;align-items:center;gap:12px;margin-bottom:9px;font-size:13.5px}
+  .covbar{display:flex;height:24px;border-radius:4px;overflow:hidden;background:var(--panel)}
+  .covbar .miss{background:var(--alert)}
+  .covbar .rep{background:var(--bench)}
+
+  /* ---------- recommendations ---------- */
+  .recs{display:grid;gap:14px;max-width:860px}
+  .rec{display:grid;grid-template-columns:48px 1fr;border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+  .rec .badge{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:20px;font-weight:700}
+  .rec.linked .badge{background:var(--alert)}
+  .rec .rbody{padding:14px 18px}
+  .rec h3{font-size:16px;margin-bottom:3px}
+  .rec .tag{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--alert);font-weight:700}
+  .rec p{font-size:13.5px;color:var(--navy);margin-top:4px}
+  .rec .needs{font-size:12.5px;color:var(--gray);margin-top:6px}
+  .rec .needs b{color:var(--navy)}
+
+  /* ---------- limitations ---------- */
+  .limits{background:var(--panel);border-radius:9px;padding:20px 24px;max-width:860px;margin-top:8px}
+  .limits h3{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);margin-bottom:10px}
+  .limits ul{list-style:none}
+  .limits li{font-size:13.5px;padding-left:18px;position:relative;margin-bottom:7px;color:var(--navy)}
+  .limits li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--bryan)}
+
+  /* ---------- FOOTER / BUTTONS ---------- */
+  footer{background:var(--navy);color:#fff;padding:46px 0 40px}
+  footer .ftitle{font-family:Georgia,serif;font-size:20px;margin-bottom:4px}
+  footer .fsub{font-size:13px;color:var(--gray);margin-bottom:24px}
+  .btnrow{display:flex;flex-wrap:wrap;gap:12px}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:7px;
+    font-size:14px;font-weight:600;text-decoration:none;transition:transform .15s ease,background .15s ease,border-color .15s ease;
+    border:1px solid transparent;
+  }
+  .btn.primary{background:var(--bryan);color:#fff}
+  .btn.primary:hover{background:#2A7DE8;transform:translateY(-2px)}
+  .btn.ghost{background:transparent;color:#fff;border-color:#3A506E}
+  .btn.ghost:hover{border-color:var(--bryan-light);transform:translateY(-2px)}
+  .btn.pending{background:transparent;color:var(--gray);border-color:#2A3B54;cursor:default}
+  .btn.pending::after{content:"soon";font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+  .fnote{margin-top:22px;font-size:11.5px;color:var(--gray)}
+  :focus-visible{outline:2px solid var(--bryan-light);outline-offset:3px}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">CMS Public Data · Nebraska Hospitals · ED Throughput Benchmark</div>
+    <h1>Bryan absorbs Lincoln's ED demand faster than its competitor — <span class="b">at higher volume.</span></h1>
+    <p class="sub">A two-pipeline analysis of CMS hospital quality data: cleaned and modeled in Power Query → Power BI, then independently reproduced in BigQuery SQL. Both engines returned the identical result.</p>
+    <div class="meta">
+      <span><b>Alex Jardine</b> · Data &amp; Reporting Analyst</span>
+      <span>Power BI · Excel · SQL · BigQuery</span>
+      <span>Lincoln, NE</span>
+      <span>Source: <b>CMS Provider Data Catalog</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- LIVE STAT TICKER -->
+<div class="ticker" aria-label="Key statistics">
+  <div class="ticker-track" id="ticker">
+    <span class="item">Bryan median ED time: <b class="hl">117 min</b></span>
+    <span class="item">St. Elizabeth: <b class="al">162 min</b></span>
+    <span class="item">The gap: <b>45 minutes faster</b></span>
+    <span class="item">NE acute-care benchmark: <b>141.6 min</b></span>
+    <span class="item">Bryan volume class: <b class="hl">very high</b> (1 of 3 in NE)</span>
+    <span class="item">Walkouts across Bryan network: <b class="hl">0.0%</b></span>
+    <span class="item">St. Elizabeth walkouts: <b class="al">1.0%</b></span>
+    <span class="item">Acute facilities under benchmark: <b>3 of 3</b></span>
+    <span class="item">Both engines agree: <b>Power BI = BigQuery</b></span>
+  </div>
+</div>
+
+<!-- BIG IDEA -->
+<div class="bigidea">
+  <div class="wrap">
+    <p class="serif">The open question is how much headroom remains as Medicaid coverage losses push unscheduled demand toward Lincoln.</p>
+    <p class="q"><b>Testable business question:</b> Does Bryan's ED network show measurably better throughput than its Lincoln competitor and Nebraska acute-care peers in public CMS data — and does that finding hold after controlling for volume class and facility type?</p>
+  </div>
+</div>
+
+<!-- 01 — HEAD TO HEAD (SIGNATURE) -->
+<section class="story">
+  <div class="wrap reveal">
+    <div class="secnum">01</div>
+    <h2 class="sectitle">The head-to-head: 117 vs. 162 minutes</h2>
+    <div class="secmeta">Measure OP_18b · median ED time, discharged patients · the two Lincoln systems against the state benchmark</div>
+    <div class="h2h" id="h2h">
+      <div class="barrow">
+        <div class="name">Bryan Medical Center<small>Very high volume</small></div>
+        <div class="track"><div class="fill bryan" data-w="51.5">&nbsp;</div></div>
+        <div class="val" style="color:var(--bryan)">117</div>
+      </div>
+      <div class="barrow">
+        <div class="name">NE acute-care avg<small>benchmark</small></div>
+        <div class="track"><div class="fill ctx" data-w="62.4">&nbsp;</div></div>
+        <div class="val" style="color:var(--gray)">141.6</div>
+      </div>
+      <div class="barrow">
+        <div class="name">CHI St. Elizabeth<small>Medium volume</small></div>
+        <div class="track"><div class="fill alert" data-w="71.4">&nbsp;</div></div>
+        <div class="val" style="color:var(--alert)">162</div>
+      </div>
+    </div>
+    <p class="benchmark-note">Bryan moves patients through ~28% faster than its only crosstown competitor — while carrying a heavier load. Bryan is one of just <b>3 of 75</b> Nebraska EDs in the "very high" volume class; St. Elizabeth is "medium." A higher-volume ED would be expected to run <em>slower</em>, not faster.</p>
+  </div>
+</section>
+
+<!-- 02 — NETWORK WIDE -->
+<section class="story">
+  <div class="wrap reveal">
+    <div class="secnum">02</div>
+    <h2 class="sectitle">Network-wide, not a flagship outlier</h2>
+    <div class="secmeta">All Bryan acute facilities vs. the 141.6-minute Nebraska acute-care average</div>
+    <div class="netgrid">
+      <div class="netcard"><div class="v">105</div><div class="n">Grand Island Regional</div><div class="d">−36.6 vs. benchmark · acquired 2019</div></div>
+      <div class="netcard"><div class="v">108</div><div class="n">Kearney Regional</div><div class="d">−33.6 vs. benchmark · acquired 2022</div></div>
+      <div class="netcard"><div class="v">117</div><div class="n">Bryan Medical Center</div><div class="d">−24.6 vs. benchmark · flagship</div></div>
+      <div class="netcard"><div class="v over">162</div><div class="n">CHI St. Elizabeth</div><div class="d">+20.4 vs. benchmark · competitor</div></div>
+    </div>
+    <p class="benchmark-note">Every Bryan acute facility ranks below the state average. Consistency across hospitals acquired years apart points to transferable operational process, not a single fast site.</p>
+  </div>
+</section>
+
+<!-- 03 — WALKOUTS -->
+<section class="story">
+  <div class="wrap reveal">
+    <div class="secnum">03</div>
+    <h2 class="sectitle">A second indicator agrees: zero walkouts</h2>
+    <div class="secmeta">Measure OP_22 · % of patients who left without being seen — demand exceeding capacity, made visible</div>
+    <div class="walk" id="walk">
+      <div class="walkrow">
+        <span>Bryan network</span>
+        <div class="walktrack"><div class="walkfill" style="background:var(--bryan)" data-w="0">&nbsp;</div></div>
+        <b style="color:var(--bryan)">0.0%</b>
+      </div>
+      <div class="walkrow">
+        <span>CHI St. Elizabeth</span>
+        <div class="walktrack"><div class="walkfill" style="background:var(--alert)" data-w="67">&nbsp;</div></div>
+        <b style="color:var(--alert)">1.0%</b>
+      </div>
+      <div class="walkrow">
+        <span>NE acute avg</span>
+        <div class="walktrack"><div class="walkfill" style="background:var(--bench)" data-w="83">&nbsp;</div></div>
+        <b style="color:var(--gray)">1.24%</b>
+      </div>
+    </div>
+    <p class="benchmark-note">Two independent throughput indicators point the same direction. Reported as CMS-published 0.0% — it may round from a small true rate, and I'd validate against internal registration data.</p>
+  </div>
+</section>
+
+<!-- 04 — DATA COVERAGE -->
+<section class="story">
+  <div class="wrap reveal">
+    <div class="secnum">04</div>
+    <h2 class="sectitle">What's missing is structural, not failure</h2>
+    <div class="secmeta">Reported vs. missing CMS measures per facility · the data-quality backstop behind the benchmark</div>
+    <div class="cov" id="cov">
+      <div class="covrow"><span>Bryan Medical Center</span><div class="covbar"><div class="miss" data-w="43">&nbsp;</div><div class="rep" data-w="57">&nbsp;</div></div></div>
+      <div class="covrow"><span>CHI St. Elizabeth</span><div class="covbar"><div class="miss" data-w="47">&nbsp;</div><div class="rep" data-w="53">&nbsp;</div></div></div>
+      <div class="covrow"><span>Grand Island Regional</span><div class="covbar"><div class="miss" data-w="43">&nbsp;</div><div class="rep" data-w="57">&nbsp;</div></div></div>
+      <div class="covrow"><span>Kearney Regional</span><div class="covbar"><div class="miss" data-w="47">&nbsp;</div><div class="rep" data-w="53">&nbsp;</div></div></div>
+      <div class="covrow"><span>Crete Area (CAH)</span><div class="covbar"><div class="miss" data-w="60">&nbsp;</div><div class="rep" data-w="40">&nbsp;</div></div></div>
+      <div class="covrow"><span>Merrick (CAH)</span><div class="covbar"><div class="miss" data-w="67">&nbsp;</div><div class="rep" data-w="33">&nbsp;</div></div></div>
+    </div>
+    <p class="benchmark-note"><span style="color:var(--alert);font-weight:700">■</span> missing &nbsp; <span style="color:var(--bench);font-weight:700">■</span> reported. Critical-access facilities (Crete, Merrick) report the least — but absence here is mostly "not applicable" to their service mix, not failed reporting. This is why the headline comparison stays acute-care, like-for-like.</p>
+  </div>
+</section>
+
+<!-- 05 — RECOMMENDATIONS -->
+<section class="story">
+  <div class="wrap reveal">
+    <div class="secnum">05</div>
+    <h2 class="sectitle">Three questions for internal data</h2>
+    <div class="secmeta">Public data shows the benchmark; these need Epic — and two connect directly to Medicaid coverage-loss exposure</div>
+    <div class="recs">
+      <div class="rec">
+        <div class="badge">1</div>
+        <div class="rbody">
+          <h3>Quantify behavioral-health boarding</h3>
+          <p>Public medians can't see the admitted-and-waiting population, and behavioral health is the chronically capacity-constrained line.</p>
+          <div class="needs"><b>Needs:</b> Epic ADT timestamps + psych bed census · <b>Produces:</b> the boarding-hours decomposition a capacity investment case requires.</div>
+        </div>
+      </div>
+      <div class="rec linked">
+        <div class="badge">2</div>
+        <div class="rbody">
+          <span class="tag">Connects to Medicaid work-requirement exposure</span>
+          <h3>Build a coverage-loss early-warning monitor</h3>
+          <p>Projected disenrollment of 16,000–30,000 Nebraskans converts covered, scheduled care into uninsured, unscheduled ED visits — and Bryan is the region's catch basin.</p>
+          <div class="needs"><b>Needs:</b> registration/payer-mix data, weekly, against state disenrollment waves · <b>Produces:</b> a leading indicator, weeks ahead of the income statement.</div>
+        </div>
+      </div>
+      <div class="rec linked">
+        <div class="badge">3</div>
+        <div class="rbody">
+          <span class="tag">Connects to Medicaid work-requirement exposure</span>
+          <h3>Forecast census 7–14 days out</h3>
+          <p>Predict census by service line to flex staffing proactively rather than premium-pay reactively. Structurally the same forecasting problem as athlete availability — constrained capacity, seasonal demand, individualized risk.</p>
+          <div class="needs"><b>Needs:</b> admissions time series + the coverage-loss signal from #2 · <b>Produces:</b> staffing-grid inputs; success = fewer premium-labor hours at equal or better throughput.</div>
+        </div>
+      </div>
+    </div>
+    <div class="limits">
+      <h3>Stated limitations</h3>
+      <ul>
+        <li>OP_18b covers discharged ED patients only — boarding of admitted patients isn't captured.</li>
+        <li>0.0% walkouts is CMS-reported and may round from a small true rate.</li>
+        <li>Public hospital-quality data lags ~12 months by design (OP_18b: Jul 2024–Jun 2025; OP_22: CY 2024) — which is exactly why these recommendations point to internal data.</li>
+        <li>Bryan East and West share one CMS certification number; campus-level analysis requires internal data.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER / BUTTONS -->
+<footer>
+  <div class="wrap">
+    <div class="ftitle">Lincoln ED Throughput Benchmark</div>
+    <div class="fsub">Built end-to-end in Power Query / Power BI and reproduced in BigQuery SQL · validated to the same result · Alex Jardine</div>
+    <div class="btnrow">
+      <a class="btn primary" href="https://github.com/alexjardinedata" target="_blank" rel="noopener">View on GitHub</a>
+      <a class="btn ghost" href="https://www.linkedin.com/in/alexjardinedata" target="_blank" rel="noopener">Connect on LinkedIn</a>
+      <a class="btn pending" href="#" onclick="return false" aria-disabled="true" title="Link once published">View README&nbsp;</a>
+      <a class="btn pending" href="#" onclick="return false" aria-disabled="true" title="Link once published">Download queries.sql&nbsp;</a>
+      <a class="btn pending" href="#" onclick="return false" aria-disabled="true" title="Link once published">View Power BI dashboard&nbsp;</a>
+    </div>
+    <p class="fnote">Source: CMS Provider Data Catalog (Timely &amp; Effective Care – Hospital, Hospital General Information) · Nebraska subset · Tools: Excel Power Query, Power BI, BigQuery SQL. Buttons marked "soon" are placeholders to repoint once the repo files are published.</p>
+  </div>
+</footer>
+
+<script>
+  // animate bars when scrolled into view
+  const setFills = (root) => {
+    root.querySelectorAll('[data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+  };
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        setFills(e.target);
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.2});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // duplicate ticker content for seamless loop
+  const t = document.getElementById('ticker');
+  if(t){ t.innerHTML += t.innerHTML; }
+</script>
+</body>
+</html>

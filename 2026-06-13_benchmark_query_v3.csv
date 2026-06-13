@@ -1,0 +1,7 @@
+facility_name,org_group,hospital_type,median_ed_minutes,ne_acute_benchmark,vs_benchmark,speed_rank
+CRETE AREA MEDICAL CENTER,Bryan Health Network,Critical Access Hospitals,100.0,141.6,-41.6,1
+GRAND ISLAND REGIONAL MEDICAL CENTER,Bryan Health Network,Acute Care Hospitals,105.0,141.6,-36.6,2
+KEARNEY REGIONAL MEDICAL CENTER,Bryan Health Network,Acute Care Hospitals,108.0,141.6,-33.6,3
+BRYAN MEDICAL CENTER,Bryan Health Network,Acute Care Hospitals,117.0,141.6,-24.6,4
+MERRICK MEDICAL CENTER,Bryan Health Network,Critical Access Hospitals,125.0,141.6,-16.6,5
+CHI HEALTH ST. ELIZABETH,Lincoln Competitor,Acute Care Hospitals,162.0,141.6,20.4,6

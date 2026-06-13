@@ -64,9 +64,11 @@ CMS reports 0.0% of patients leaving without being seen across every Bryan facil
 - Benchmark query uses two CTEs, a join across fact and dimension tables, a filtered aggregate for the benchmark population, and a `RANK()` window function.
 - Output validated against the Power BI dashboard — same numbers, two engines.
 
+All six BigQuery queries (raw inspect → cleaning → validation → benchmark) are in one organized file: [`queries.sql`](queries.sql). Power Query M code: [`FactMeasures.m`](FactMeasures.m), [`DimHospital.m`](DimHospital.m).
+
 Full step-by-step logic and decision rationale for both pipelines:
-- [`docs/CHANGELOG_PowerQuery.md`](docs/CHANGELOG_PowerQuery.md)
-- [`docs/CHANGELOG_SQL.md`](docs/CHANGELOG_SQL.md)
+- [`CHANGELOG_PowerQuery.md`](CHANGELOG_PowerQuery.md)
+- [`CHANGELOG_SQL.md`](CHANGELOG_SQL.md)
 
 ---
 
@@ -93,12 +95,19 @@ Full step-by-step logic and decision rationale for both pipelines:
 ```
 .
 ├── README.md
-├── sql/                 BigQuery cleaning + analysis queries
-├── powerquery/          Power Query M code (FactMeasures, DimHospital)
-├── outputs/             Query result CSVs
-├── docs/                Cleaning changelogs (Power Query + SQL)
-└── dashboard/           Power BI dashboard screenshots
+├── index.html                  Interactive dashboard (GitHub Pages)
+├── queries.sql                 All six BigQuery queries (cleaning → benchmark)
+├── FactMeasures.m              Power Query M — fact table cleaning
+├── DimHospital.m               Power Query M — dimension table cleaning
+├── CHANGELOG_PowerQuery.md     Power Query cleaning steps + decisions
+├── CHANGELOG_SQL.md            BigQuery cleaning steps + revision history
+├── 01_ed_throughput.png        Power BI dashboard — ED throughput
+├── 02_walkouts.png             Power BI dashboard — walkouts
+├── Bryan_ED_Benchmark.pbix     Power BI source file
+└── *.csv                       Cleaned table + benchmark query outputs
 ```
+
+**Live dashboard:** [alexjardinedata.github.io/nebraska-ed-throughput-benchmark](https://alexjardinedata.github.io/nebraska-ed-throughput-benchmark/)
 
 ---
 

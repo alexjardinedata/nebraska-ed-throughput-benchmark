@@ -2,7 +2,7 @@
 
 **Built in Power Query → Power BI, then independently reproduced in BigQuery SQL — both engines return the identical result.**
 
-> Public CMS data shows Bryan absorbing Lincoln's ED demand faster than its competitor at higher volume — the open question is how much headroom remains as coverage losses arrive.
+> Public CMS data shows Bryan absorbing Lincoln's ED demand faster than its competitor at higher volume — a directional read on resilience. The strategic question it raises, but can't answer, is how much capacity survives as coverage losses phase in.
 
 **Testable business question:** Does Bryan's ED network show measurably better throughput than its Lincoln competitor and Nebraska acute-care peers in public CMS data — and does that finding hold after controlling for volume class and facility type?
 
@@ -98,13 +98,17 @@ Full step-by-step logic and decision rationale for both pipelines:
 
 ---
 
-## Recommendations & Areas for Further Investigation
+## Measuring the Capacity Ceiling
 
-**1. Quantify behavioral-health boarding.** Public medians can't see the admitted-and-waiting population. *Needs:* Epic ADT timestamps + psych bed census. *Produces:* the boarding-hours decomposition a capacity investment case requires.
+The benchmark answers a performance question: Bryan moves ED patients faster than its competitor and the state, and it holds under volume and facility-type controls. But the strategic question Bryan faces is capacity under rising demand — who absorbs the Medicaid-driven shift as coverage losses convert scheduled care into unscheduled ED visits. Public data can't measure capacity directly, so this project answered the closest proxy it could: throughput at load, plus zero walkouts at the state's highest volume class — a directional read that Bryan carries the most load with the least visible strain. That is a resilience signal, not a capacity measurement.
 
-**2. Build a coverage-loss early-warning monitor.** *(connects to Medicaid work-requirement exposure)* The Urban Institute (characterized as left-leaning in the source reporting) projects Nebraska Medicaid expansion enrollment could decline by 16,000–30,000 by 2028 — a 23–43% drop off the ~70,000 expansion base — driven by the new work requirement *and* a federal shift to six-month eligibility redeterminations. As coverage lapses, covered scheduled care converts into uninsured, unscheduled ED visits. *Needs:* registration/payer-mix data tracked weekly against the renewal/disenrollment cycle (existing-enrollee checks begin July 31, 2026). *Produces:* a leading indicator linking coverage loss to capacity pressure weeks before it reaches the income statement.
+These three recommendations are how you'd measure the ceiling for real. Each requires internal data the public files don't contain, and together they form a sequence — **diagnose** how much cushion is already spent, **detect** new demand as it arrives, **respond** before throughput degrades.
 
-**3. Forecast census 7–14 days out to flex staffing.** *(connects to Medicaid work-requirement exposure)* Predict census by service line to staff proactively rather than premium-pay reactively. *Needs:* admissions time series, with the coverage-loss signal from Rec 2 as a model input. *Produces:* staffing-grid inputs; success = fewer premium-labor hours at equal or better throughput.
+**1. Diagnose — quantify behavioral-health boarding.** *How much of the cushion is already silently consumed.* Public medians can't see the admitted-and-waiting population, and behavioral health is the chronically capacity-constrained line. *Needs:* Epic ADT timestamps + psych bed census. *Produces:* the boarding-hours decomposition a capacity investment case requires — the share of ED capacity already lost to patients waiting for a bed.
+
+**2. Detect — build a coverage-loss early-warning monitor.** *The leading edge of the demand surge.* The Urban Institute (characterized as left-leaning in the source reporting) projects Nebraska Medicaid expansion enrollment could decline by 16,000–30,000 by 2028 — a 23–43% drop off the ~70,000 expansion base — driven by the new work requirement *and* a federal shift to six-month eligibility redeterminations. As coverage lapses, covered scheduled care converts into uninsured, unscheduled ED visits. *Needs:* registration/payer-mix data tracked weekly against the renewal/disenrollment cycle (existing-enrollee checks begin July 31, 2026). *Produces:* a leading indicator of unscheduled demand weeks before it reaches the income statement.
+
+**3. Respond — forecast census 7–14 days out.** *Staff ahead of the load before it tests the ceiling.* Predict census by service line to flex staffing proactively rather than premium-pay reactively — structurally the same forecasting problem as athlete availability: constrained capacity, seasonal demand, individualized risk. *Needs:* admissions time series, with the coverage-loss signal from #2 as a model input. *Produces:* staffing-grid inputs that protect throughput as load rises; success = fewer premium-labor hours at equal or better throughput.
 
 ---
 

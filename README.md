@@ -10,7 +10,7 @@
 
 ## Project Overview
 
-Lincoln is a two-system hospital market, and Bryan Health operates as the region's pressure-release valve — a Level II trauma center absorbing demand the surrounding region can't serve. With Nebraska's Medicaid work requirements effective May 1, 2026, coverage losses are projected to convert scheduled care into unscheduled ED demand, making ED capacity a strategic question.
+Lincoln is a two-system hospital market, and Bryan Health operates as the region's pressure-release valve — a Level II trauma center absorbing demand the surrounding region can't serve. Nebraska's Medicaid work requirements took effect May 1, 2026, with existing-enrollee checks phasing in through the renewal cycle beginning July 31, 2026. As coverage lapses, scheduled care is projected to convert into unscheduled ED demand, making ED capacity a strategic question.
 
 This project benchmarks ED throughput for every Medicare-certified hospital in Nebraska — all five Bryan network facilities plus CHI Health St. Elizabeth — using public CMS hospital quality data.
 
@@ -102,7 +102,7 @@ Full step-by-step logic and decision rationale for both pipelines:
 
 **1. Quantify behavioral-health boarding.** Public medians can't see the admitted-and-waiting population. *Needs:* Epic ADT timestamps + psych bed census. *Produces:* the boarding-hours decomposition a capacity investment case requires.
 
-**2. Build a coverage-loss early-warning monitor.** *(connects to Medicaid work-requirement exposure)* Projected disenrollment of 16,000–30,000 Nebraskans converts covered, scheduled care into uninsured, unscheduled ED visits. *Needs:* registration/payer-mix data tracked weekly against state disenrollment waves. *Produces:* a leading indicator linking coverage loss to capacity pressure weeks before it reaches the income statement.
+**2. Build a coverage-loss early-warning monitor.** *(connects to Medicaid work-requirement exposure)* The Urban Institute (characterized as left-leaning in the source reporting) projects Nebraska Medicaid expansion enrollment could decline by 16,000–30,000 by 2028 — a 23–43% drop off the ~70,000 expansion base — driven by the new work requirement *and* a federal shift to six-month eligibility redeterminations. As coverage lapses, covered scheduled care converts into uninsured, unscheduled ED visits. *Needs:* registration/payer-mix data tracked weekly against the renewal/disenrollment cycle (existing-enrollee checks begin July 31, 2026). *Produces:* a leading indicator linking coverage loss to capacity pressure weeks before it reaches the income statement.
 
 **3. Forecast census 7–14 days out to flex staffing.** *(connects to Medicaid work-requirement exposure)* Predict census by service line to staff proactively rather than premium-pay reactively. *Needs:* admissions time series, with the coverage-loss signal from Rec 2 as a model input. *Produces:* staffing-grid inputs; success = fewer premium-labor hours at equal or better throughput.
 
@@ -113,6 +113,7 @@ Full step-by-step logic and decision rationale for both pipelines:
 - **Source:** CMS Provider Data Catalog — [Timely and Effective Care – Hospital](https://data.cms.gov/provider-data/dataset/yv7e-xc69) and Hospital General Information (Nebraska subset).
 - **Measurement period:** OP_18b = Jul 1, 2024 – Jun 30, 2025; OP_22 = CY 2024. (Public hospital-quality data lags ~12 months by design — which is precisely why the recommendations point to internal data for current operations.)
 - **Limitations:** medians cover discharged ED patients only (boarding not captured); 0.0% walkouts is CMS-reported and may round from a small true rate; Bryan East/West share one CMS certification number (campus-level analysis needs internal data).
+- **Coverage-loss projection:** the 16,000–30,000 figure is an Urban Institute estimate for 2028 (attributing the decline to the work requirement plus six-month redeterminations), reported by the Nebraska Hospital Association / CNN. It sizes the demand risk; it is not a measured or current disenrollment count.
 
 ---
 

@@ -63,7 +63,29 @@
 
 ---
 
+## 06 — Descriptive statistics (Queries 7 & 8)
+
+Added to quantify *how much* better Bryan's throughput is, not just that it is better.
+
+- **Query 7 — distribution of acute-hospital medians:** `COUNT`, `AVG`, `STDDEV_SAMP`, and `APPROX_QUANTILES` for median, Q1, Q3, IQR, min/max/range.
+  - *`STDDEV_SAMP` (sample, n−1) not `STDDEV_POP` — the 21 hospitals are a sample/snapshot, not the full universe.*
+  - *`APPROX_QUANTILES(col, N)` returns N+1 cut points as a zero-indexed array; `[OFFSET(1)]`/`[OFFSET(3)]` on a 4-bucket split give Q1/Q3. IQR = Q3 − Q1, computed inline.*
+- **Query 8 — each Lincoln hospital's position in that distribution:** `AVG() OVER ()` and `STDDEV_SAMP() OVER ()` (empty `OVER ()` broadcasts the whole-set mean/SD to every row) to compute a z-score, plus `PERCENT_RANK() OVER (ORDER BY median_min DESC)` for a speed percentile.
+
+- **Dual reference-population decision (important):**
+  - The **benchmark** (Query 6) uses the mean of acute EDs **excluding** both Lincoln hospitals → **141.6**. This is a *comparison* statistic; a facility shouldn't be benchmarked against a pool containing itself.
+  - The **descriptive statistics** (Queries 7 & 8) use **all 21** acute EDs **including** Bryan and St. Elizabeth → mean **138.0**. This is a *distribution* statistic; a z-score/percentile locates a hospital *within* the distribution it belongs to, so it must be included.
+  - *These are deliberately different populations for deliberately different purposes — not an inconsistency. Both are labeled wherever cited (141.6 = benchmark; 138.0 = distribution mean).*
+
+- **Percentile inversion decision:** `PERCENT_RANK` is ordered `DESC` so that **faster hospitals score a higher percentile** — aligning the number with "better" for non-technical readers. Without `DESC`, St. Elizabeth (slow) would read as 85th percentile, which sounds positive but is the opposite of the finding.
+
+- **Reporting decision (skew + small n):** the distribution is right-skewed (mean 138 > median 132; slowest 246 far past Q3 156), and n=21 (<30). Audience-facing materials therefore lead with **percentile and IQR** (assumption-free, robust to skew) and **omit the z-score**, which assumes approximate normality the data doesn't support. The z-score is retained in SQL for a technical reader but not surfaced in the README or dashboard.
+  - *Headline statistic: Bryan Medical Center sits exactly at Q1 (117 min) — the 25th-percentile boundary — i.e., faster than ~75% of Nebraska acute EDs.*
+
+---
+
 ## Power Query → SQL Function Map (reference)
+
 
 | Power Query step | BigQuery equivalent |
 |---|---|
@@ -81,6 +103,9 @@
 ## Revision History
 
 ### 2026-06-13
+**Added**
+- Descriptive statistics (Queries 7 & 8): distribution summary (n, mean, median, SD, Q1/Q3, IQR, range) and per-hospital percentile + z-score. Documents the dual reference-population choice (138.0 distribution mean vs. 141.6 benchmark), the `DESC` percentile inversion so faster = higher, and the decision to lead with percentile/IQR and omit the z-score given right-skew and n<30.
+
 **Changed**
 - `timely_care_clean`: added `TRIM` to `Measure ID`, `State`, and `Score_Category` (match/filter/group columns), plus `TRIM(LOWER())` in the category match — mirrors the Power Query trim step and defends filters/grouping against whitespace.
 - `hospital_info_clean`: added `TRIM` to `Hospital Type` (benchmark grouping field).

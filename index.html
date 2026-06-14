@@ -100,6 +100,22 @@
   .netcard .d{font-size:11.5px;color:var(--gray);margin-top:4px}
   @media(max-width:680px){.netgrid{grid-template-columns:1fr 1fr}}
 
+  /* ---------- statistics section ---------- */
+  .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:760px;margin-bottom:26px}
+  .statcard{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:14px 16px}
+  .statcard .sv{font-family:Georgia,serif;font-size:26px;font-weight:700;color:var(--navy)}
+  .statcard .sl{font-size:11.5px;color:var(--gray);margin-top:3px;line-height:1.3}
+  @media(max-width:680px){.statgrid{grid-template-columns:1fr 1fr}}
+  /* percentile scale */
+  .pscale{max-width:760px;margin-top:30px;margin-bottom:8px}
+  .pscale .axis{position:relative;height:50px;background:linear-gradient(90deg,#FBE6DA 0%,#EEF3F9 55%,#DCE9F8 100%);border-radius:7px;border:1px solid var(--rule)}
+  .pmark{position:absolute;top:-30px;transform:translateX(-50%);text-align:center}
+  .pmark .dot{width:14px;height:14px;border-radius:50%;margin:0 auto;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .pmark .lab{font-size:10.5px;color:var(--navy);margin-top:3px;white-space:nowrap;font-weight:600;line-height:1.2}
+  .pmark.below{top:auto;bottom:-30px}
+  .pmark.below .lab{margin-top:0;margin-bottom:3px}
+  .pscale .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--gray);margin-top:34px}
+
   /* ---------- walkout strip ---------- */
   .walk{display:grid;gap:10px;max-width:620px}
   .walkrow{display:grid;grid-template-columns:150px 1fr 54px;align-items:center;gap:12px;font-size:14px}
@@ -180,6 +196,7 @@
     <span class="item">Walkouts across Bryan network: <b class="hl">0.0%</b></span>
     <span class="item">St. Elizabeth walkouts: <b class="al">1.0%</b></span>
     <span class="item">Acute facilities under benchmark: <b>3 of 3</b></span>
+    <span class="item">Bryan speed percentile: <b class="hl">75th</b> of NE acute EDs</span>
     <span class="item">Both engines agree: <b>Power BI = BigQuery</b></span>
   </div>
 </div>
@@ -235,10 +252,34 @@
   </div>
 </section>
 
-<!-- 03 — WALKOUTS -->
+<!-- 03 — STATISTICAL CONTEXT -->
 <section class="story">
   <div class="wrap reveal">
     <div class="secnum">03</div>
+    <h2 class="sectitle">How big is the gap? Bryan sits in the fastest quarter of the state</h2>
+    <div class="secmeta">Distribution of median ED time across all 21 Nebraska acute-care hospitals · OP_18b</div>
+    <div class="statgrid">
+      <div class="statcard"><div class="sv">21</div><div class="sl">NE acute-care hospitals</div></div>
+      <div class="statcard"><div class="sv">132</div><div class="sl">median of medians (min)</div></div>
+      <div class="statcard"><div class="sv">117–156</div><div class="sl">middle 50% (IQR, min)</div></div>
+      <div class="statcard"><div class="sv">93–246</div><div class="sl">full range (min)</div></div>
+    </div>
+    <div class="pscale">
+      <div class="axis">
+        <div class="pmark" style="left:75%"><div class="dot" style="background:var(--bryan)"></div><div class="lab">Bryan<br>75th</div></div>
+        <div class="pmark below" style="left:85%"><div class="lab">Grand Is.<br>85th</div><div class="dot" style="background:var(--bryan-light)"></div></div>
+        <div class="pmark" style="left:15%"><div class="dot" style="background:var(--alert)"></div><div class="lab">St. Elizabeth<br>15th</div></div>
+      </div>
+      <div class="ends"><span>← slower (0th percentile)</span><span>faster (100th) →</span></div>
+    </div>
+    <p class="benchmark-note">Bryan Medical Center sits exactly at the 25th-percentile boundary of ED time — meaning it's <b>faster than roughly 75% of Nebraska acute EDs</b> — and its regional facilities reach the 80th–85th. The competitor sits at the 15th. <span style="color:var(--gray)">Distribution is right-skewed (a few very slow hospitals pull the mean above the median), so percentile and IQR are reported rather than standard deviation; these are descriptive statistics on published facility medians, not an inferential test.</span></p>
+  </div>
+</section>
+
+<!-- 04 — WALKOUTS -->
+<section class="story">
+  <div class="wrap reveal">
+    <div class="secnum">04</div>
     <h2 class="sectitle">A second indicator agrees: zero walkouts</h2>
     <div class="secmeta">Measure OP_22 · % of patients who left without being seen — demand exceeding capacity, made visible</div>
     <div class="walk" id="walk">
@@ -259,24 +300,6 @@
       </div>
     </div>
     <p class="benchmark-note">Two independent throughput indicators point the same direction. Reported as CMS-published 0.0% — it may round from a small true rate, and I'd validate against internal registration data.</p>
-  </div>
-</section>
-
-<!-- 04 — DATA COVERAGE -->
-<section class="story">
-  <div class="wrap reveal">
-    <div class="secnum">04</div>
-    <h2 class="sectitle">What's missing is structural, not failure</h2>
-    <div class="secmeta">Reported vs. missing CMS measures per facility · the data-quality backstop behind the benchmark</div>
-    <div class="cov" id="cov">
-      <div class="covrow"><span>Bryan Medical Center</span><div class="covbar"><div class="miss" data-w="43">&nbsp;</div><div class="rep" data-w="57">&nbsp;</div></div></div>
-      <div class="covrow"><span>CHI St. Elizabeth</span><div class="covbar"><div class="miss" data-w="47">&nbsp;</div><div class="rep" data-w="53">&nbsp;</div></div></div>
-      <div class="covrow"><span>Grand Island Regional</span><div class="covbar"><div class="miss" data-w="43">&nbsp;</div><div class="rep" data-w="57">&nbsp;</div></div></div>
-      <div class="covrow"><span>Kearney Regional</span><div class="covbar"><div class="miss" data-w="47">&nbsp;</div><div class="rep" data-w="53">&nbsp;</div></div></div>
-      <div class="covrow"><span>Crete Area (CAH)</span><div class="covbar"><div class="miss" data-w="60">&nbsp;</div><div class="rep" data-w="40">&nbsp;</div></div></div>
-      <div class="covrow"><span>Merrick (CAH)</span><div class="covbar"><div class="miss" data-w="67">&nbsp;</div><div class="rep" data-w="33">&nbsp;</div></div></div>
-    </div>
-    <p class="benchmark-note"><span style="color:var(--alert);font-weight:700">■</span> missing &nbsp; <span style="color:var(--bench);font-weight:700">■</span> reported. Critical-access facilities (Crete, Merrick) report the least — but absence here is mostly "not applicable" to their service mix, not failed reporting. This is why the headline comparison stays acute-care, like-for-like.</p>
   </div>
 </section>
 

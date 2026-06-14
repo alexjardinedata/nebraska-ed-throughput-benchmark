@@ -166,3 +166,88 @@ SELECT
 FROM ed_times e CROSS JOIN acute_avg a
 WHERE e.org_group IN ('Bryan Health Network','Lincoln Competitor')
 ORDER BY e.score_numeric;
+
+
+-- ============================================================
+-- QUERY 7: Descriptive statistics — acute-hospital ED distribution
+-- Question: How is ED throughput distributed across Nebraska
+--           acute-care hospitals, and is the distribution skewed?
+-- Concepts: AVG, STDDEV_SAMP, APPROX_QUANTILES (median, Q1, Q3, IQR),
+--           MIN/MAX, COUNT
+-- Note: Unit of analysis is the per-hospital published median
+--       (OP_18b), not patient-level data — every stat describes
+--       spread ACROSS hospitals. Population here is ALL acute EDs
+--       (includes Bryan + St. Elizabeth) because this DESCRIBES the
+--       distribution they belong to — distinct from the benchmark
+--       in Query 6, which EXCLUDES them to avoid circular comparison.
+-- Finding: n=21, mean 138.0 > median 132.0 and slowest (246) sits
+--          far past Q3 (156) — the distribution is right-skewed.
+--          Because of the skew, IQR (39.0; Q1 117 to Q3 156) is the
+--          honest spread measure, not SD (36.5). Bryan Medical Center
+--          at 117 sits exactly at Q1 — the 25th-percentile boundary.
+-- ============================================================
+
+WITH acute AS (
+  SELECT f.facility_id, f.facility_name, f.score_numeric AS median_min, h.org_group
+  FROM `my-project-48398-bh-interview.Bryan_ED_Benchmark.timely_care_clean` f
+  JOIN `my-project-48398-bh-interview.Bryan_ED_Benchmark.hospital_info_clean` h
+    ON f.facility_id = h.facility_id
+  WHERE f.measure_id = 'OP_18b'
+    AND f.score_numeric IS NOT NULL
+    AND h.hospital_type = 'Acute Care Hospitals'
+)
+SELECT
+  COUNT(*)                                              AS n_acute_hospitals,
+  ROUND(AVG(median_min), 1)                             AS mean_min,
+  ROUND(APPROX_QUANTILES(median_min, 2)[OFFSET(1)], 1) AS median_of_medians,
+  ROUND(STDDEV_SAMP(median_min), 1)                     AS sd_min,
+  ROUND(APPROX_QUANTILES(median_min, 4)[OFFSET(1)], 1) AS q1_min,
+  ROUND(APPROX_QUANTILES(median_min, 4)[OFFSET(3)], 1) AS q3_min,
+  ROUND(APPROX_QUANTILES(median_min, 4)[OFFSET(3)]
+      - APPROX_QUANTILES(median_min, 4)[OFFSET(1)], 1)  AS iqr_min,
+  MIN(median_min)                                       AS fastest,
+  MAX(median_min)                                       AS slowest,
+  ROUND(MAX(median_min) - MIN(median_min), 1)           AS range_min
+FROM acute;
+
+
+-- ============================================================
+-- QUERY 8: Percentile and z-score — Lincoln hospitals in context
+-- Question: Where do the Lincoln-area hospitals fall within the
+--           distribution of Nebraska acute EDs?
+-- Concepts: window aggregates with empty OVER () to broadcast the
+--           overall mean/SD to every row; PERCENT_RANK window
+--           function (DESC so faster = higher percentile)
+-- Note: PERCENT_RANK uses ORDER BY median_min DESC so that FASTER
+--       hospitals score HIGHER — aligns the number with "better"
+--       for a non-technical reader. z_score retained for reference
+--       but NOT reported in audience-facing materials: n<30 and the
+--       distribution is right-skewed (Query 7), so a percentile is
+--       the honest, assumption-free statistic. Population = all acute
+--       EDs (same as Query 7), so positioning describes the true
+--       distribution each hospital belongs to.
+-- Finding: Bryan Medical Center = 75th percentile for speed (faster
+--          than 75% of NE acute EDs); Grand Island 85th, Kearney 80th.
+--          CHI St. Elizabeth = 15th percentile.
+-- ============================================================
+
+WITH acute AS (
+  SELECT f.facility_id, f.facility_name, f.score_numeric AS median_min, h.org_group
+  FROM `my-project-48398-bh-interview.Bryan_ED_Benchmark.timely_care_clean` f
+  JOIN `my-project-48398-bh-interview.Bryan_ED_Benchmark.hospital_info_clean` h
+    ON f.facility_id = h.facility_id
+  WHERE f.measure_id = 'OP_18b'
+    AND f.score_numeric IS NOT NULL
+    AND h.hospital_type = 'Acute Care Hospitals'
+),
+scored AS (
+  SELECT
+    facility_name, org_group, median_min,
+    ROUND((median_min - AVG(median_min) OVER ()) / STDDEV_SAMP(median_min) OVER (), 2) AS z_score,
+    ROUND(PERCENT_RANK() OVER (ORDER BY median_min DESC) * 100, 0)                     AS pct_faster_than
+  FROM acute
+)
+SELECT *
+FROM scored
+WHERE org_group IN ('Bryan Health Network','Lincoln Competitor')
+ORDER BY median_min;

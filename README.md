@@ -52,6 +52,32 @@ CMS reports 0.0% of patients leaving without being seen across every Bryan facil
 
 ---
 
+## Statistical Summary
+
+To quantify *how much* better Bryan's throughput is — not just that it is better — I described the distribution of ED throughput across all 21 Nebraska acute-care hospitals and located each Lincoln-area hospital within it.
+
+| Statistic (acute-hospital median ED times, n = 21) | Value |
+|---|---|
+| Mean | 138.0 min |
+| Median | 132.0 min |
+| Interquartile range (Q1–Q3) | 117 – 156 min (IQR 39) |
+| Range (fastest – slowest) | 93 – 246 min |
+
+**Where the Lincoln hospitals land:**
+
+| Facility | Median ED min | Speed percentile* |
+|---|---|---|
+| Grand Island Regional (Bryan) | 105 | 85th |
+| Kearney Regional (Bryan) | 108 | 80th |
+| **Bryan Medical Center** | **117** | **75th** |
+| CHI St. Elizabeth | 162 | 15th |
+
+\*Percentile ordered so faster = higher. Bryan Medical Center sits exactly at the 25th-percentile boundary (Q1 = 117) — **faster than roughly 75% of Nebraska acute EDs** — while its regional facilities reach the 80th–85th. The competitor sits at the 15th.
+
+**Method note:** these are descriptive statistics on published per-hospital medians, not patient-level data — so no inferential test (t-test, p-value) is claimed; that would require the underlying visit-level records. Because the distribution is right-skewed (mean 138 > median 132) and n < 30, the summary leads with **percentile and IQR**, which are robust to skew and assumption-free, rather than standard deviation or z-scores. Two reference populations are used deliberately: the **benchmark** (141.6) excludes both Lincoln hospitals to avoid circular comparison, while the **distribution** statistics (mean 138) include all acute EDs, since a percentile locates a hospital within the distribution it belongs to.
+
+---
+
 ## How It Was Built
 
 ### Pipeline A — Power Query → Power BI

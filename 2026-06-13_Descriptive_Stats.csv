@@ -1,0 +1,2 @@
+n_acute_hospitals,mean_min,median_of_medians,sd_min,q1_min,q3_min,iqr_min,fastest,slowest,range_min
+21,138.0,132.0,36.5,117.0,156.0,39.0,93.0,246.0,153.0
